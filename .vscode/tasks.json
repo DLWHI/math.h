@@ -10,7 +10,8 @@
                 "s21_math.c",
                 "s21_math_tests.c",
                 "-o",
-                "tests.out"
+                "tests.out",
+                "-lcheck"
             ],
             "options": {
                 "cwd": "${fileDirname}"
@@ -26,14 +27,15 @@
         },
         {
             "type": "cppbuild",
-            "label": "pade",
+            "label": "datagen",
             "command": "gcc",
             "args": [
                 "-fdiagnostics-color=always",
                 "-g",
-                "pade.c",
+                "s21_math.c",
+                "datagen.c",
                 "-o",
-                "pade.out"
+                "datagen.out"
             ],
             "options": {
                 "cwd": "${fileDirname}"

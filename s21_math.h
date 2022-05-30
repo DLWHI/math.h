@@ -1,21 +1,28 @@
 #ifndef SRC_S21_MATH_H_
 #define SRC_S21_MATH_H_
 
+#ifndef INF
 #define INF 1.0/0.0
+#endif
+#ifndef NAN
 #define NAN 0.0/0.0
+#endif
 
-#define S21_PI 3.1415926535897931159
-#define S21_E 2.71828182845904523
+#define S21_PI 3.1415926535897931159l
+#define S21_PId2 1.5707963267948966l
+#define S21_2PI 6.283185307179586l
+#define S21_E 2.71828182845904523l
+#define S21_LN2 0.69314718055994530l
+#define S21_LN10 2.3025850929940456l
 
 void set_precision(long double digits);
 
 int s21_abs(int x);
-int s21_abs(int x);
 long double s21_fabs(long double x);
 
-long double s21_fmod(long double x, long double y);
 long double s21_floor(long double x);
 long double s21_ceil(long double x);
+long double s21_fmod(long double x, long double y);
 
 long double s21_sin(long double x);
 long double s21_cos(long double x);
