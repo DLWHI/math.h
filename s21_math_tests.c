@@ -3,12 +3,11 @@
 #include <time.h>
 #include "s21_math.h"
 #include <math.h>
+#include <float.h>
 // TO DO
-// 1. Fix precision errors at leats in exp/log/sin/cos etc.
-// 2. Fix edges on exp/log i.e. exp(-inf)/log(0)
-// 3. Fix domain in tan
+// 1. Fix precision errors at leats in sin/cos etc.
 // 4. Fix range in acos and atan
-long double precision = 1e-6;
+long double precision = 1e-10;
 
 START_TEST(abs_t) {
     printf("Testing s21_abs: ");
@@ -124,13 +123,11 @@ END_TEST
 START_TEST(sin_t) {
     printf("Testing s21_sin: ");
     int n = 49;
-    long double a = -S21_2PI, b = S21_2PI, step = (b - a)/n;
+    long double a = -S21_2PI - S21_PI_2, b = S21_2PI + S21_PI_2, step = (b - a)/n;
     for (long double x = a; x < b; x += step)
             ck_assert_ldouble_le(fabsl(s21_sin(x) - sinl(x)), precision);
     for (int n = -10; n < 10; n++)
-            ck_assert_ldouble_le(fabsl(s21_sin(S21_PId2*n) - sinl(S21_PId2*n)), precision);
-    // ck_assert_ldouble_le(fabsl(s21_sin(1337e147) - sinl(1337e147)), precision);
-    // ck_assert_ldouble_le(fabsl(s21_sin(1337e-147) - sinl(1337e-147)), precision);
+            ck_assert_ldouble_le(fabsl(s21_sin(S21_PI_2*n) - sinl(S21_PI_2*n)), precision);
     ck_assert_ldouble_nan(s21_sin(INF));
     ck_assert_ldouble_nan(s21_sin(-INF));
     ck_assert_ldouble_nan(s21_sin(NAN));
@@ -140,13 +137,11 @@ END_TEST
 START_TEST(cos_t) {
     printf("Testing s21_cos: ");
     int n = 49;
-    long double a = -S21_2PI, b = S21_2PI, step = (b - a)/n;
+    long double a = -S21_2PI - S21_PI_2, b = S21_2PI + S21_PI_2, step = (b - a)/n;
     for (long double x = a; x < b; x += step)
             ck_assert_ldouble_le(fabsl(s21_cos(x) - cosl(x)), precision);
     for (int n = -10; n < 10; n++)
-            ck_assert_ldouble_le(fabsl(s21_cos(S21_PId2*n) - cosl(S21_PId2*n)), precision);
-    // ck_assert_ldouble_le(fabsl(s21_cos(1337e147) - cosl(1337e147)), precision);
-    // ck_assert_ldouble_le(fabsl(s21_cos(1337e-147) - cosl(1337e-147)), precision);
+            ck_assert_ldouble_le(fabsl(s21_cos(S21_PI_2*n) - cosl(S21_PI_2*n)), precision);
     ck_assert_ldouble_nan(s21_cos(INF));
     ck_assert_ldouble_nan(s21_cos(-INF));
     ck_assert_ldouble_nan(s21_cos(NAN));
@@ -156,13 +151,11 @@ END_TEST
 START_TEST(tan_t) {
     printf("Testing s21_tan: ");
     int n = 49;
-    long double a = -S21_PId2, b = S21_PId2, step = (b - a)/n;
-    for (long double x = a; x < b; x += step)
+    long double a = -S21_PI_2 - S21_PI_2, b = S21_PI_2 + S21_PI_2, step = (b - a)/n;
+    for (long double x = a + step; x < b; x += step)
             ck_assert_ldouble_le(fabsl(s21_tan(x) - tanl(x)), precision);
     for (int n = -10; n < 10; n++)
-            ck_assert_ldouble_le(fabsl(s21_tan(S21_PId2*n) - tanl(S21_PId2*n)), precision);
-    // ck_assert_ldouble_le(fabsl(s21_tan(1337e147) - tanl(1337e147)), precision);
-    // ck_assert_ldouble_le(fabsl(s21_tan(1337e-147) - tanl(1337e-147)), precision);
+            ck_assert_ldouble_le(fabsl(s21_tan(S21_PI_2*n) - tanl(S21_PI_2*n)), precision);
     ck_assert_ldouble_eq(s21_tan(INF), tanl(INF));
     ck_assert_ldouble_eq(s21_tan(-INF), tanl(-INF));
     ck_assert_ldouble_nan(s21_tan(NAN));
@@ -204,8 +197,8 @@ START_TEST(atan_t) {
     long double a = -2.5, b = 2, step = (b - a)/n;
     for (long double x = a; x < b; x += step)
             ck_assert_ldouble_le(fabsl(s21_atan(x) - atanl(x)), precision);
-    // ck_assert_ldouble_le(fabsl(s21_atan(1337e147) - atanl(1337e147)), precision);
-    // ck_assert_ldouble_le(fabsl(s21_atan(1337e-147) - atanl(1337e-147)), precision);
+    ck_assert_ldouble_le(fabsl(s21_atan(10) - atanl(10)), precision);
+    ck_assert_ldouble_le(fabsl(s21_atan(1e-10) - atanl(1e-10)), precision);
     ck_assert_ldouble_nan(s21_atan(INF));
     ck_assert_ldouble_nan(s21_atan(-INF));
     ck_assert_ldouble_nan(s21_atan(NAN));
@@ -214,48 +207,81 @@ START_TEST(atan_t) {
 END_TEST
 
 START_TEST(pow_t) {
+    // oriented on math(not doc)
     printf("Testing s21_pow: ");
     int n = 49;
-    long double a = -2.7, b = 2.7, step = (b - a)/n;
-    for (long double x = a; x < b; x += step)
-        for (long double y = a; y < b; y += step)
+    // normal values
+    long double a = 0, b = 2.7, step = (b - a)/n;
+    for (long double x = a + step; x < b; x += step)
+        for (long double y = -b; y < b; y += step)
             ck_assert_ldouble_le(fabsl(s21_pow(x, y) - powl(x, y)), precision);
-
-    // ck_assert_ldouble_le(fabsl(s21_pow(1337e147, 3.4) - powl(1337e147, 3.4)), precision);
-    // ck_assert_ldouble_le(fabsl(s21_pow(3.4, 1337e147) - powl(3.4, 1337e147)), precision);
-
-    // ck_assert_ldouble_le(fabsl(s21_pow(1337e-147, 3.4) - powl(1337e-147, 3.4)), precision);
-    // ck_assert_ldouble_le(fabsl(s21_pow(3.4, 1337e-147) - powl(3.4, 1337e-147)), precision);
-
-    // ck_assert_ldouble_le(fabsl(s21_pow(1337e147, 1e147) - powl(1337e147, 1e147)), precision);
-    // ck_assert_ldouble_le(fabsl(s21_pow(1337e147, 1e-147) - powl(1337e147, 1e-147)), precision);
-    // ck_assert_ldouble_le(fabsl(s21_pow(1337e-147, 1e147) - powl(1337e-147, 1e147)), precision);
-    // ck_assert_ldouble_le(fabsl(s21_pow(1337e-147, 1e-147) - powl(1337e-147, 1e-147)), precision);
-
-    ck_assert_ldouble_le(fabsl(s21_pow(0, 4.2) - powl(0, 4.2)), precision);
-    ck_assert_ldouble_le(fabsl(s21_pow(4.2, 0) - powl(4.2, 0)), precision);
-    ck_assert_ldouble_nan(s21_pow(0, 0));
-
-    ck_assert_ldouble_eq(s21_pow(2.3, INF), powl(2.3, INF));
-    ck_assert_ldouble_eq(s21_pow(2.3, -INF), powl(2.3, -INF));
+    // neg base
+    ck_assert_ldouble_nan(s21_pow(-4.2, 4.2));
+    ck_assert_ldouble_eq(s21_pow(-4.2, 3), powl(-4.2, 3));
+    ck_assert_ldouble_eq(s21_pow(-4, 3), powl(-4, 3));
+    ck_assert_ldouble_nan(s21_pow(-4, 3.3));
+    // zero base and power
+    ck_assert_ldouble_eq(s21_pow(0, 1), powl(0, 1));
+    ck_assert_ldouble_eq(s21_pow(1, 0), powl(1, 0));
+    ck_assert_ldouble_eq(s21_pow(0, 4.2), powl(0, 4.2));
+    ck_assert_ldouble_eq(s21_pow(0, -4.2), powl(0, -4.2));
+    ck_assert_ldouble_eq(s21_pow(4.2, 0), powl(4.2, 0));
+    ck_assert_ldouble_eq(s21_pow(-4.2, 0), powl(-4.2, 0));
+    ck_assert_ldouble_eq(s21_pow(0, 0), powl(0, 0));
+    // infinity base and power
+    ck_assert_ldouble_eq(s21_pow(INF, 2), powl(INF, 2));
+    ck_assert_ldouble_eq(s21_pow(INF, -2), powl(INF, -2));
+    ck_assert_ldouble_eq(s21_pow(INF, 2.3), powl(INF, 2.3));
+    ck_assert_ldouble_eq(s21_pow(INF, -2.3), powl(INF, -2.3));
+    ck_assert_ldouble_eq(s21_pow(INF, INF), powl(INF, INF));
+    ck_assert_ldouble_eq(s21_pow(INF, -INF), powl(INF, -INF));
+    
+    ck_assert_ldouble_eq(s21_pow(-INF, 2), powl(-INF, 2));
+    ck_assert_ldouble_eq(s21_pow(-INF, -2), powl(-INF, -2));
     ck_assert_ldouble_nan(s21_pow(-INF, 2.3));
-    ck_assert_ldouble_eq(s21_pow(-2.3, INF), powl(-2.3, INF));
-    ck_assert_ldouble_nan(s21_pow(INF, -2.3));
-    ck_assert_ldouble_eq(s21_pow(-2.3, -INF), powl(-2.3, -INF));
     ck_assert_ldouble_nan(s21_pow(-INF, -2.3));
-
-    ck_assert_ldouble_nan(s21_pow(INF, INF));
-    ck_assert_ldouble_nan(s21_pow(INF, -INF));
     ck_assert_ldouble_nan(s21_pow(-INF, INF));
     ck_assert_ldouble_nan(s21_pow(-INF, -INF));
-    
+
+    ck_assert_ldouble_eq(s21_pow(2, INF), powl(2, INF));
+    ck_assert_ldouble_nan(s21_pow(-2, INF));
+    ck_assert_ldouble_eq(s21_pow(2.3, INF), powl(2.3, INF));
+    ck_assert_ldouble_nan(s21_pow(-2.3, INF));
+    ck_assert_ldouble_eq(s21_pow(2, -INF), powl(2, -INF));
+    ck_assert_ldouble_nan(s21_pow(-2, -INF));
+    ck_assert_ldouble_eq(s21_pow(2.3, -INF), powl(2.3, -INF));
+    ck_assert_ldouble_nan(s21_pow(-2.3, -INF));
+
+    ck_assert_ldouble_eq(s21_pow(INF, INF), powl(INF, INF));
+    ck_assert_ldouble_eq(s21_pow(INF, -INF), powl(INF, -INF));
+    ck_assert_ldouble_nan(s21_pow(-INF, INF));
+    ck_assert_ldouble_nan(s21_pow(-INF, -INF));
+    // one+infinity
+    ck_assert_ldouble_nan(s21_pow(1, INF));
+    ck_assert_ldouble_nan(s21_pow(1, -INF));
+    ck_assert_ldouble_eq(s21_pow(INF, 1), powl(INF, 1));
+    ck_assert_ldouble_eq(s21_pow(-INF, 1), powl(-INF, 1));
+    ck_assert_ldouble_nan(s21_pow(-1, INF));
+    ck_assert_ldouble_nan(s21_pow(-1, -INF));
+    ck_assert_ldouble_eq(s21_pow(INF, -1), powl(INF, -1));
+    ck_assert_ldouble_eq(s21_pow(-INF, -1), powl(-INF, -1));
+    // zero+infinity
+    ck_assert_ldouble_eq(s21_pow(0, INF), powl(0, INF));
+    ck_assert_ldouble_eq(s21_pow(0, -INF), powl(0, -INF));
+    ck_assert_ldouble_eq(s21_pow(INF, 0), powl(INF, 0));
+    ck_assert_ldouble_eq(s21_pow(-INF, 0), powl(-INF, 0));
+    // inf+nan
     ck_assert_ldouble_nan(s21_pow(INF, NAN));
     ck_assert_ldouble_nan(s21_pow(-INF, NAN));
     ck_assert_ldouble_nan(s21_pow(NAN, INF));
     ck_assert_ldouble_nan(s21_pow(NAN, -INF));
-
+    // nan + one
+    ck_assert_ldouble_eq(s21_pow(1, NAN), powl(1, NAN));
+    ck_assert_ldouble_nan(s21_pow(-1, NAN));
+    ck_assert_ldouble_nan(s21_pow(NAN, 1));
+    ck_assert_ldouble_nan(s21_pow(NAN, -1));
+    //nan
     ck_assert_ldouble_nan(s21_pow(NAN, NAN));
-
     ck_assert_ldouble_nan(s21_pow(NAN, 0.69));
     ck_assert_ldouble_nan(s21_pow(0.69, NAN));
 
@@ -270,8 +296,9 @@ START_TEST(exp_t) {
             ck_assert_ldouble_le(fabsl(s21_exp(x) - expl(x)), precision);
     ck_assert_ldouble_le(fabsl(s21_exp(0) - expl(0)), precision);
     ck_assert_ldouble_le(fabsl(s21_exp(s21_log(2.4)) - expl(logl(2.4))), precision);
-    // ck_assert_ldouble_eq(s21_exp(1337e147), expl(1337e147));
-    // ck_assert_ldouble_eq(s21_exp(1337e-147), expl(1337e-147));
+    ck_assert_ldouble_le(fabsl(s21_exp(10) - expl(10)), precision);
+    ck_assert_ldouble_le(fabsl(s21_exp(-10) - expl(-10)), precision);
+    ck_assert_ldouble_le(fabsl(s21_exp(1e-10) - expl(1e-10)), precision);
     ck_assert_ldouble_eq(s21_exp(INF), expl(INF));
     ck_assert_ldouble_eq(s21_exp(-INF), expl(-INF));
     ck_assert_ldouble_nan(s21_exp(NAN));
@@ -286,8 +313,6 @@ START_TEST(sqrt_t) {
             ck_assert_ldouble_le(fabsl(s21_sqrt(x) - sqrtl(x)), precision);
     ck_assert_ldouble_nan(s21_sqrt(-9));
     ck_assert_ldouble_eq(s21_sqrt(3*3), sqrtl(3*3));
-    // ck_assert_ldouble_eq(s21_sqrt(1337e147), sqrtl(1337e147));
-    // ck_assert_ldouble_eq(s21_sqrt(1337e-147), sqrtl(1337e-147));
     ck_assert_ldouble_eq(s21_sqrt(INF), sqrtl(INF));
     ck_assert_ldouble_nan(s21_sqrt(-INF));
     ck_assert_ldouble_nan(s21_sqrt(NAN));
@@ -302,10 +327,10 @@ START_TEST(log_t) {
             ck_assert_ldouble_le(fabsl(s21_log(x) - logl(x)), precision);
     ck_assert_ldouble_le(fabsl(s21_log(S21_E) - logl(S21_E)), precision);
     ck_assert_ldouble_le(fabsl(s21_log(s21_exp(2)) - logl(expl(2))), precision);
-    // ck_assert_ldouble_eq(s21_log(1337e147), logl(1337e147));
-    // ck_assert_ldouble_eq(s21_log(1337e-147), logl(1337e-147));
-    //ck_assert_ldouble_eq(s21_log(0), s21_log(0));
-    // ck_assert_ldouble_eq(s21_log(INF), logl(INF));
+    ck_assert_ldouble_le(fabsl(s21_log(10) - logl(10)), precision);
+    ck_assert_ldouble_le(fabsl(s21_log(1e-10) - logl(1e-10)), precision);
+    ck_assert_ldouble_eq(s21_log(0), s21_log(0));
+    ck_assert_ldouble_eq(s21_log(INF), logl(INF));
     ck_assert_ldouble_nan(s21_log(-INF));
     ck_assert_ldouble_nan(s21_log(NAN));
     printf("[PASS]\n");
@@ -335,7 +360,7 @@ Suite *test_suite(void) {
     // tcase_add_test(tc_core, acos_t);
     // tcase_add_test(tc_core, atan_t);
 
-    // tcase_add_test(tc_core, pow_t);
+    tcase_add_test(tc_core, pow_t);
     tcase_add_test(tc_core, exp_t);
     tcase_add_test(tc_core, sqrt_t);
     tcase_add_test(tc_core, log_t);
@@ -344,6 +369,7 @@ Suite *test_suite(void) {
 }
 
 int main(void) {
+    printf("%Lg %Lg", fmodl(-2*S21_PI/3, S21_PI_2), tanl(-S21_PI_2));
     Suite *s = test_suite();
     SRunner *runner = srunner_create(s);
     srunner_set_fork_status(runner, CK_NOFORK);
