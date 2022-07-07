@@ -25,7 +25,7 @@ long double besselJ(long double n) {
     long double J = 0;
     int order = 50;
     for (int m = 0; m < order; m++)
-        J += s21_pow(-1, m)*s21_pow(S21_PI, 2*m + n)/(fact(m)*fact(m + n));
+        J += s21_pow(-1, m)*s21_pow(S21_PI_2, 2*m + n)/(fact(m)*fact(m + n));
     return J;
 }
 void gen_besselI(const int count) {
@@ -36,7 +36,7 @@ void gen_besselI(const int count) {
 void gen_besselJ(const int count) {
     printf("%.40Lf,\n", besselJ(0));
     for (int i = 1; i < 2*count; i++)
-        printf("%.20Lg,\n", 2.0*besselJ(i));
+        printf("%.20Lg,\n", 2*besselJ(i));
 }
 void gen_atan(const int count) {
     long double theta[count];

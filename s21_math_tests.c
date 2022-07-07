@@ -58,7 +58,7 @@ START_TEST(ceil_t) {
     printf("[PASS]\n");
 }
 END_TEST
-/*START_TEST(round_t) {
+START_TEST(round_t) {
     printf("Testing s21_round: ");
     int n = 49;
     long double a = -2.7, b = 2.7, step = (b - a)/n;
@@ -69,7 +69,7 @@ END_TEST
     ck_assert_ldouble_nan(s21_round(NAN));
     printf("[PASS]\n");
 }
-END_TEST*/
+END_TEST
 START_TEST(fmod_t) {
     printf("Testing s21_fmod: ");
     int n = 49;
@@ -122,12 +122,12 @@ END_TEST
 
 START_TEST(sin_t) {
     printf("Testing s21_sin: ");
-    int n = 49;
+    int n = 99;
     long double a = -S21_2PI - S21_PI_2, b = S21_2PI + S21_PI_2, step = (b - a)/n;
     for (long double x = a; x < b; x += step)
-            ck_assert_ldouble_le(fabsl(s21_sin(x) - sinl(x)), precision);
-    for (int n = -10; n < 10; n++)
-            ck_assert_ldouble_le(fabsl(s21_sin(S21_PI_2*n) - sinl(S21_PI_2*n)), precision);
+        ck_assert_ldouble_le(fabsl(s21_sin(x) - sinl(x)), precision);
+    for (n = -10; n < 10; n++)
+        ck_assert_ldouble_le(fabsl(s21_sin(S21_PI_2*n) - sinl(S21_PI_2*n)), precision);
     ck_assert_ldouble_nan(s21_sin(INF));
     ck_assert_ldouble_nan(s21_sin(-INF));
     ck_assert_ldouble_nan(s21_sin(NAN));
@@ -136,11 +136,11 @@ START_TEST(sin_t) {
 END_TEST
 START_TEST(cos_t) {
     printf("Testing s21_cos: ");
-    int n = 49;
+    int n = 99;
     long double a = -S21_2PI - S21_PI_2, b = S21_2PI + S21_PI_2, step = (b - a)/n;
     for (long double x = a; x < b; x += step)
             ck_assert_ldouble_le(fabsl(s21_cos(x) - cosl(x)), precision);
-    for (int n = -10; n < 10; n++)
+    for (n = -10; n < 10; n++)
             ck_assert_ldouble_le(fabsl(s21_cos(S21_PI_2*n) - cosl(S21_PI_2*n)), precision);
     ck_assert_ldouble_nan(s21_cos(INF));
     ck_assert_ldouble_nan(s21_cos(-INF));
@@ -151,13 +151,11 @@ END_TEST
 START_TEST(tan_t) {
     printf("Testing s21_tan: ");
     int n = 49;
-    long double a = -S21_PI_2 - S21_PI_2, b = S21_PI_2 + S21_PI_2, step = (b - a)/n;
-    for (long double x = a + step; x < b; x += step)
+    long double a = -S21_PI_2, b = S21_PI_2, step = (b - a)/n;
+    for (long double x = a + step; x < b - step; x += step)
             ck_assert_ldouble_le(fabsl(s21_tan(x) - tanl(x)), precision);
-    for (int n = -10; n < 10; n++)
-            ck_assert_ldouble_le(fabsl(s21_tan(S21_PI_2*n) - tanl(S21_PI_2*n)), precision);
-    ck_assert_ldouble_eq(s21_tan(INF), tanl(INF));
-    ck_assert_ldouble_eq(s21_tan(-INF), tanl(-INF));
+    ck_assert_ldouble_nan(s21_tan(INF));
+    ck_assert_ldouble_nan(s21_tan(-INF));
     ck_assert_ldouble_nan(s21_tan(NAN));
     printf("[PASS]\n");
 }
@@ -165,10 +163,10 @@ END_TEST
 
 START_TEST(asin_t) {
     printf("Testing s21_asin: ");
-    int n = 49;
+    int n = 99;
     long double a = -1, b = 1, step = (b - a)/n;
-    for (long double x = a; x < b; x += step)
-            ck_assert_ldouble_le(fabsl(s21_asin(x) - asinl(x)), precision);
+    for (long double x = a; x < b - step; x += step)
+        ck_assert_ldouble_le(fabsl(s21_asin(x) - asinl(x)), precision);
     ck_assert_ldouble_nan(s21_asin(2));
     ck_assert_ldouble_nan(s21_asin(-2));
     ck_assert_ldouble_nan(s21_asin(INF));
@@ -179,10 +177,10 @@ START_TEST(asin_t) {
 END_TEST
 START_TEST(acos_t) {
     printf("Testing s21_acos: ");
-    int n = 49;
+    int n = 99;
     long double a = -1, b = 1, step = (b - a)/n;
-    for (long double x = a; x < b; x += step)
-            ck_assert_ldouble_le(fabsl(s21_acos(x) - acosl(x)), precision);
+    for (long double x = a; x < b - step; x += step)
+        ck_assert_ldouble_le(fabsl(s21_acos(x) - acosl(x)), precision);
     ck_assert_ldouble_nan(s21_acos(2));
     ck_assert_ldouble_nan(s21_acos(-2));
     ck_assert_ldouble_nan(s21_acos(INF));
@@ -350,15 +348,15 @@ Suite *test_suite(void) {
     tcase_add_test(tc_core, floor_t);
     tcase_add_test(tc_core, ceil_t);
     tcase_add_test(tc_core, fmod_t);
-    //tcase_add_test(tc_core, round_t);
+    tcase_add_test(tc_core, round_t);
 
     tcase_add_test(tc_core, sin_t);
     tcase_add_test(tc_core, cos_t);
     tcase_add_test(tc_core, tan_t);
 
-    // tcase_add_test(tc_core, asin_t);
-    // tcase_add_test(tc_core, acos_t);
-    // tcase_add_test(tc_core, atan_t);
+    tcase_add_test(tc_core, asin_t);
+    tcase_add_test(tc_core, acos_t);
+    tcase_add_test(tc_core, atan_t);
 
     tcase_add_test(tc_core, pow_t);
     tcase_add_test(tc_core, exp_t);
@@ -369,7 +367,6 @@ Suite *test_suite(void) {
 }
 
 int main(void) {
-    printf("%Lg %Lg", fmodl(-2*S21_PI/3, S21_PI_2), tanl(-S21_PI_2));
     Suite *s = test_suite();
     SRunner *runner = srunner_create(s);
     srunner_set_fork_status(runner, CK_NOFORK);

@@ -6,7 +6,7 @@
 #define MANBITC 63
 
 long double tangent_angles[] = {
-        S21_PI_2,
+        S21_PI_2/2.0l,
         0.4636476090008061162,
         0.24497866312686415417,
         0.12435499454676143503,
@@ -165,7 +165,10 @@ long double s21_ceil(long double x) {
     return s21_floor(x + 1);
 }
 long double s21_round(long double x) {
-    return s21_trunc(x + 0.5l);
+    if (x > 0)
+        return s21_trunc(x + 0.5l);
+    else
+        return s21_trunc(x - 0.5l);
 }
 long double s21_fmod(long double x, long double y) {
     long double i = s21_trunc(x/y);
@@ -210,10 +213,10 @@ long double chebyshev_sin(long double x) {
     return (bn - bn_2)/2.0l;
 }
 long double cordic_rotation_to0(long double sin, long double cos) {
-    int n = 75, i = 0;
+    int n = 63;
     long double u[2] = {cos, sin};
     long double alpha = 0, s;
-    for (; i < n && tangent_angles[i] > 0; alpha += s*tangent_angles[i], i++) {
+    for (int i = 0; i < n; alpha += s*tangent_angles[i], i++) {
         s = (0 > u[1]) - (0 < u[1]);
         long double v[2];
         v[0] = u[0] - s*pow2i(-i)*u[1];
@@ -262,12 +265,14 @@ long double s21_asin(long double x) {
 long double s21_acos(long double x) {
     if (-1 > x || x > 1 || !s21_isfinite(x))
         return NAN;
-    return cordic_rotation_to0(s21_sqrt(1 - x*x), s21_fabs(x)) + S21_PI_2*(x < 0) + S21_PI_2*(x == -1);
+    else if (x < 0)
+        return S21_PI - cordic_rotation_to0(s21_sqrt(1 - x*x), -x);
+    return cordic_rotation_to0(s21_sqrt(1 - x*x), x);
 }
 long double s21_atan(long double x) {
     if (!s21_isfinite(x))
-        return x;
-    return cordic_rotation_to0(x/s21_sqrt(1 - x*x), 1.0l/s21_sqrt(1 - x*x));
+        return NAN;
+    return cordic_rotation_to0(x/s21_sqrt(1 + x*x), 1.0l/s21_sqrt(1 + x*x));
 }
 
 
